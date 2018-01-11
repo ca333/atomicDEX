@@ -21,6 +21,9 @@ run the aotomicDEX GUI: (current version has only OSX/WIN version of the komodop
 meteor run
 ```
 
+### LINUX
+
+Follow the instructions from above (OSX) and place your marketmaker executable inside `private/static/LINUX`in the atomicDEX directory. 
 
 ### WIN
 
