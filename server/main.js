@@ -19,17 +19,17 @@ var marketmakerBin = "";
 Meteor.startup(() => {
     if (os.platform() === 'darwin') {
         fixPath();
-        marketmakerBin = Meteor.rootPath + '/../../../../../marketmaker',
+        marketmakerBin = Meteor.rootPath + '/../../../../../private/static/OSX/marketmaker',
         marketmakerDir = `${process.env.HOME}/Library/Application Support/marketmaker`;
     }
 
     if (os.platform() === 'linux') {
-        marketmakerBin = Meteor.rootPath + '/../../../../../marketmaker',
+        marketmakerBin = Meteor.rootPath + '/../../../../../private/static/LINUX/marketmaker',
         marketmakerDir = `${process.env.HOME}/.marketmaker`;
     }
 
     if (os.platform() === 'win32') {
-        marketmakerBin = Meteor.rootPath + '/../../../../../marketmaker.exe',
+        marketmakerBin = Meteor.rootPath + '/../../../../../private/static/WIN/marketmaker.exe',
         marketmakerBin = path.normalize(marketmakerBin);
     }
 
@@ -492,119 +492,124 @@ Meteor.methods({
             }
         },
         checkswapstatus(requestid, quoteid) {
-          if(requestid =="" && quoteid=="" || requestid ==null && quoteid==null){
-            const swaplist = {
-              'userpass': UserData.findOne({key: "userpass"}).userpass,
-              'method': 'swapstatus'
-            }
-            try {
-                const result = HTTP.call('POST', 'http://127.0.0.1:7783', {
-                    data: swaplist
-                  });
-                  var swaps = JSON.parse(result.content).swaps;
-                 if(TradeData.findOne({key: "tempswap"})){
-                   if(TradeData.findOne({key: "tempswap"}).expiration*1000<Date.now()){
-                       TradeData.remove({key: "tempswap"});
-                   }
-                 }
-                   var tswaps = SwapData.find({swaplist:false});
-                   tswaps.forEach((swapelem) => {
-                     if(swapelem.expiration*1000+12000000<Date.now()){
-                       try{
-                         SwapData.update({ tradeid: swapelem.tradeid }, { $set: {
-                           status: "timedout",
-                           finished: true,
-                           Apaymentspent: 1
-                         }});
-                       }catch(e){
-                         throw new Meteor.Error(e);
-                       }
+          if(UserData.findOne({key: "userpass"})){
+            if(requestid =="" && quoteid=="" || requestid ==null && quoteid==null){
+              const swaplist = {
+                'userpass': UserData.findOne({key: "userpass"}).userpass,
+                'method': 'swapstatus'
+              }
+              try {
+                  const result = HTTP.call('POST', 'http://127.0.0.1:7783', {
+                      data: swaplist
+                    });
+                    var swaps = JSON.parse(result.content).swaps;
+                   if(TradeData.findOne({key: "tempswap"})){
+                     if(TradeData.findOne({key: "tempswap"}).expiration*1000<Date.now()){
+                         TradeData.remove({key: "tempswap"});
                      }
-                   });
+                   }
+                     var tswaps = SwapData.find({swaplist:false});
+                     tswaps.forEach((swapelem) => {
+                       if(swapelem.expiration*1000+12000000<Date.now()){
+                         try{
+                           SwapData.update({ tradeid: swapelem.tradeid }, { $set: {
+                             status: "timedout",
+                             finished: true,
+                             Apaymentspent: 1
+                           }});
+                         }catch(e){
+                           throw new Meteor.Error(e);
+                         }
+                       }
+                     });
 
-                  for(var i = 0; i < swaps.length; i++) {
-                    var swapobj = swaps[i];
-                    try {
-                        Meteor.call('checkswapstatus', swapobj.requestid, swapobj.quoteid);
-                      } catch(e) {
-                        throw new Meteor.Error(e);
+                    for(var i = 0; i < swaps.length; i++) {
+                      var swapobj = swaps[i];
+                      try {
+                          Meteor.call('checkswapstatus', swapobj.requestid, swapobj.quoteid);
+                        } catch(e) {
+                          throw new Meteor.Error(e);
+                        }
                       }
+                    } catch(e) {
+                      throw new Meteor.Error(e);
                     }
-                  } catch(e) {
-                    throw new Meteor.Error(e);
-                  }
-          }else{
-            if(quoteid!=0 && requestid!=0){
-            const swapelem = {
-              'userpass': UserData.findOne({key: "userpass"}).userpass,
-              'method': 'swapstatus',
-              'requestid': requestid,
-              'quoteid': quoteid
-            }
-            try {
-                const result = HTTP.call('POST', 'http://127.0.0.1:7783', {
-                    data: swapelem
-                  });
-                  var swap = JSON.parse(result.content);
-                  var alice = swap.aliceid.toString();
-                  if(SwapData.findOne({aliceid: alice.substr(0,8)})){
-                    if(SwapData.findOne({aliceid: alice.substr(0,8)}).bobpayment == "0000000000000000000000000000000000000000000000000000000000000000"){
-                      try{
-                        SwapData.update( {aliceid: alice.substr(0,8)}, { $set: {
-                          requestid: swap.requestid,
-                          quoteid: swap.quoteid,
-                          //value: swap.values[0],
-                          status: "pending",
-                          finished: false,
-                          aliceid: alice.substr(0,8),
-                          bobdeposit: swap.bobdeposit,
-                          alicepayment: swap.alicepayment,
-                          bobpayment: swap.bobpayment,
-                          paymentspent: swap.paymentspent,
-                          Apaymentspent: swap.Apaymentspent,
-                          depositspent: swap.depositspent,
-                          swaplist: true,
-                          finishtime: new Date(swap.finishtime*1000).toGMTString(),
-                          sorttime: swap.finishtime*1000                        }});
-                      }catch(e){
-                        throw new Meteor.Error("Can not store Data into DB! Please report to dev.");
-                      }
-                    }else{
-                      if(SwapData.findOne({aliceid: alice.substr(0,8)}).bobpayment != "0000000000000000000000000000000000000000000000000000000000000000"){
+            }else{
+              if(quoteid!=0 && requestid!=0){
+              const swapelem = {
+                'userpass': UserData.findOne({key: "userpass"}).userpass,
+                'method': 'swapstatus',
+                'requestid': requestid,
+                'quoteid': quoteid
+              }
+              try {
+                  const result = HTTP.call('POST', 'http://127.0.0.1:7783', {
+                      data: swapelem
+                    });
+                    var swap = JSON.parse(result.content);
+                    var alice = swap.aliceid.toString();
+                    if(SwapData.findOne({aliceid: alice.substr(0,8)})){
+                      if(SwapData.findOne({aliceid: alice.substr(0,8)}).bobpayment == "0000000000000000000000000000000000000000000000000000000000000000"){
                         try{
-                          SwapData.update({aliceid: alice.substr(0,8)}, { $set: {
+                          SwapData.update( {aliceid: alice.substr(0,8)}, { $set: {
+                            requestid: swap.requestid,
+                            quoteid: swap.quoteid,
+                            //value: swap.values[0],
+                            status: "pending",
+                            finished: false,
+                            aliceid: alice.substr(0,8),
                             bobdeposit: swap.bobdeposit,
                             alicepayment: swap.alicepayment,
                             bobpayment: swap.bobpayment,
                             paymentspent: swap.paymentspent,
                             Apaymentspent: swap.Apaymentspent,
                             depositspent: swap.depositspent,
-                            value: Number(swap.values[0].toFixed(8)),
+                            swaplist: true,
                             finishtime: new Date(swap.finishtime*1000).toGMTString(),
-                            sorttime: swap.finishtime*1000,
-                            status: "finished",
-                            finished: true
-                          }});
+                            sorttime: swap.finishtime*1000                        }});
                         }catch(e){
-                          throw new Meteor.Error("Can not update Data into DB! Please report to dev.");
+                          throw new Meteor.Error("Can not store Data into DB! Please report to dev.");
                         }
-                      }
-                      else if(TradeData.findOne({key: "tempswap"})){
-                        if(TradeData.findOne({key: "tempswap"}).tradeid == swap.tradeid){
-                          if(swap.depositspent != "0000000000000000000000000000000000000000000000000000000000000000"){
-                            TradeData.remove({key: "tempswap"});
+                      }else{
+                        if(SwapData.findOne({aliceid: alice.substr(0,8)}).bobpayment != "0000000000000000000000000000000000000000000000000000000000000000"){
+                          try{
+                            SwapData.update({aliceid: alice.substr(0,8)}, { $set: {
+                              bobdeposit: swap.bobdeposit,
+                              alicepayment: swap.alicepayment,
+                              bobpayment: swap.bobpayment,
+                              paymentspent: swap.paymentspent,
+                              Apaymentspent: swap.Apaymentspent,
+                              depositspent: swap.depositspent,
+                              value: Number(swap.values[0].toFixed(8)),
+                              finishtime: new Date(swap.finishtime*1000).toGMTString(),
+                              sorttime: swap.finishtime*1000,
+                              status: "finished",
+                              finished: true
+                            }});
+                          }catch(e){
+                            throw new Meteor.Error("Can not update Data into DB! Please report to dev.");
+                          }
+                        }
+                        else if(TradeData.findOne({key: "tempswap"})){
+                          if(TradeData.findOne({key: "tempswap"}).tradeid == swap.tradeid){
+                            if(swap.depositspent != "0000000000000000000000000000000000000000000000000000000000000000"){
+                              TradeData.remove({key: "tempswap"});
+                            }
                           }
                         }
                       }
                     }
-                  }
-                    return true;
-                  } catch(e) {
-                    throw new Meteor.Error(e);
-                    return false;
-                  }
+                      return true;
+                    } catch(e) {
+                      throw new Meteor.Error(e);
+                      return false;
+                    }
+            }
           }
-        }
+          }
+          else{
+            console.log("checkswap() not ready yet");
+          }
         },
         callAPI(jobj) {
             try {
