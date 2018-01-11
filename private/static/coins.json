@@ -1,0 +1,1 @@
+[{"coin":"MNZ","asset":"MNZ","active":1,"rpcport":8800},{"coin":"BTCH","asset":"BTCH","active":1,"rpcport":14337},{"coin":"LTC","name":"litecoin","rpcport":9332,"pubtype":48,"p2shtype":5,"wiftype":176,"txfee":100000 },{"coin":"REVS","asset":"REVS","active":1,"rpcport":10196}]

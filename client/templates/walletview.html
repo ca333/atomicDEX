@@ -1,0 +1,96 @@
+<template name="walletview">
+  <nav class="navbar navbar-dark fixed-top">
+        <button type="button" class="btn btn-secondary btn-primary btn-success-mnz stop"><i class="glyphicon glyphicon-off"></i> Close Wallet</button>
+  </nav>
+  <div class="container walletview addrs">
+    <h2>Wallet</h2>
+    <span>Your {{coinsString}} deposit address: </span>
+    <button type="button" class="btn btn-default btn-xs btn-copy-link right address" data-clipboard-text="{{address}}">{{address}}</button>
+  </div>
+<div class="container qr">
+  {{> QRCode text=(address) size="128px" }}
+</div>
+  <div class="container walletview">
+    <br>
+    <span class="badge badge-dark balance">{{balance}}</span>
+
+    <div class="btn-group right" role="group" aria-label="Basic example">
+      <button type="button" class="btn btn-secondary kmd
+      {{#if activecoinKMD}}
+        buttonactived
+      {{else}}
+        buttondesactived
+      {{/if}}">KMD</button>
+      <div style="border-right: 1px solid #d9d9d9; float: left; height: 34px">
+      </div>
+      <button type="button" class="btn btn-secondary mnz
+      {{#if activecoinMNZ}}
+        buttonactived
+      {{else}}
+        buttondesactived
+      {{/if}}">BTCH</button>
+    </div>
+  </div>
+  <br>
+  <br>
+  <div class="container walletview">
+    <div class="">
+      <h2>Withdrawal</h2>
+      <div class="input-group">
+        <span class="input-group-addon">{{currentcoin}}</span>
+        <input type="text" class="form-control address" aria-label="Address" placeholder="{{currentcoin}} Address">
+        <input type="number" class="form-control amount" aria-label="Amount" placeholder="Amount" value="0">
+        <span class="input-group-addon">{{balance}}</span>
+        <span class="input-group-addon">
+          <button class="btn btn-secondary btn-danger sendcoins" type="button">Send</button>
+      </span>
+      </div>
+      {{#if activecoinMNZ}}
+      <h2>Buy BTCH</h2>
+      <div class="input-group">
+        <input type="number" class="form-control buyamount" aria-label="Amount" placeholder="Amount" value="0">
+        <span class="input-group-btn">
+        <button class="btn btn-secondary buy" type="button">Buy</button>
+        </span>
+        <!---
+        <span class="input-group-btn">
+        <button class="btn btn-secondary" type="button">{{price}} KMD/MNZ = {{total}}</button>
+        </span>
+        -->
+      </div>
+      <br>
+      <h4>Your participations:</h4>
+        <table class="table table-bordered swaps">
+        <thead>
+        <tr>
+          <th>tradeid</th>
+          <th>BTCH amount</th>
+          <th>status</th>
+          <th>price per BTCH</th>
+          <th>paid with</th>
+          <th>date</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {{#each swaps}}
+          {{> swap}}
+        {{/each}}
+        </tbody>
+        </table>
+      {{/if}}
+    </div>
+  </div>
+
+</template>
+
+<template name="swap">
+<tr>
+<td>{{tradeid}}</td>
+<td>{{value}}</td>
+<td>{{status}} {{#unless finished}} {{> sloader}} {{/unless}}{{#if finished}}{{> check}}{{/if}}</td>
+<td>{{price}}</td>
+<td>{{paycoin}}</td>
+<td>{{finishtime}}</td>
+</tr>
+</template>

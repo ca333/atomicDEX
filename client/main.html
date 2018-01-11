@@ -1,0 +1,28 @@
+<head>
+  <title>atomicDEX</title>
+  <script src="//cdn.rawgit.com/zenorocha/clipboard.js/master/dist/clipboard.min.js"></script>
+</head>
+
+<body>
+  <br>
+  {{#if login}}
+    {{#if loading}}
+      <div class="container loader text-center">
+      loading wallet... {{> loader}}
+      </div>
+    {{else}}
+      {{> loginform}}
+    {{/if}}
+    {{else}}
+      {{#unless logout}}
+        {{> walletview}}
+      {{/unless}}
+      {{#if logout}}
+        <div class="container loader text-center">
+          closing wallet... {{> loader}}
+        </div>
+      {{/if}}
+  {{/if}}
+  <br>
+  {{> footer}}
+</body>

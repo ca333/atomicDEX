@@ -1,0 +1,14 @@
+<template name="masterLayout">
+    {{> Template.dynamic template=nav}}
+    <div id="content">
+    {{#unless connected}}
+    <div class="notification">
+      <div class="alert alert-danger">
+        <strong>Connection timeout</strong> - reconnecting <i class="fa fa-refresh fa-spin"></i>
+      </div>
+    </div>
+    {{/unless}}
+    {{> Template.dynamic template=main}}
+  </div>
+  {{> Template.dynamic template=footer}}
+</template>
