@@ -145,7 +145,7 @@ Template.walletview.events({
  "click .sendcoins": function (event, template) {
     event.preventDefault();
     const amount = Number(Number(template.find(".amount").value).toFixed(8)) * numcoin;
-    const addr = template.find(".address").value;
+    const addr = template.find(".sendaddress").value;
 
     if(Number(UserData.findOne({coin:Session.get("coin")}).balance) > (amount + Number(0.00010000*numcoin)))
     {
